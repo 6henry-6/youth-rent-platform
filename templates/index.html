@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>青年城市租房与通勤成本分析平台</title>
+  <link href="{{ url_for('static', filename='vendor/bootstrap.min.css') }}" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+<body>
+<div id="app" class="app-shell">
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">CHINA YOUTH RENT OBSERVATORY</p>
+      <h1>全国主要城市青年租房成本分析平台</h1>
+      <p class="subtitle">五城横向比较 · 城市内部筛选 · 上海通勤深度分析</p>
+    </div>
+    <div class="snapshot">五城公开样本 <strong>[[ nationalMeta.records || 0 ]]</strong><br><span>北京 · 上海 · 广州 · 深圳 · 南京</span></div>
+  </header>
+
+  <main>
+    <section class="section-intro">
+      <p class="section-index">PART 01 · 跨城市比较</p>
+      <h2>先选城市，再看预算内的区域、户型与房源</h2>
+      <p>跨城市模块使用同一公开学习样本口径，适合观察城市间相对差异；数据并非实时挂牌。</p>
+    </section>
+    <section class="control-strip national-controls">
+      <label>城市
+        <select v-model="nationalFilters.city" @change="changeCity" class="form-select">
+          <option v-for="item in nationalMeta.cities" :key="item">[[ item ]]</option>
+        </select>
+      </label>
+      <label>行政区
+        <select v-model="nationalFilters.district" @change="refreshNational" class="form-select">
+          <option v-for="item in nationalMeta.districts" :key="item">[[ item ]]</option>
+        </select>
+      </label>
+      <label class="slider-label">月租上限 <strong>¥[[ nationalFilters.budget ]]</strong>
+        <input type="range" min="3000" max="40000" step="500" v-model.number="nationalFilters.budget" @input="debouncedNational">
+      </label>
+      <button class="reset-btn" @click="resetNational">恢复五城默认</button>
+    </section>
+
+    <section class="metrics">
+      <article><span>[[ nationalFilters.city ]]预算内样本</span><strong>[[ nationalSummary.count || 0 ]]</strong><small>条公开学习样本</small></article>
+      <article><span>月租中位数</span><strong>¥[[ nationalSummary.median_rent || 0 ]]</strong><small>每月</small></article>
+      <article><span>单位面积租金</span><strong>[[ nationalSummary.median_unit_rent || 0 ]]</strong><small>元 / ㎡</small></article>
+      <article><span>面积中位数</span><strong>[[ nationalSummary.median_area || 0 ]]</strong><small>平方米</small></article>
+    </section>
+
+    <section class="grid-main national-grid">
+      <article class="chart-panel"><div class="panel-heading"><div><span>01</span><h2>五城租金水平比较</h2></div><p>柱形为总租金，折线为单位面积租金</p></div><div id="cityChart" class="chart"></div></article>
+      <article class="chart-panel"><div class="panel-heading"><div><span>02</span><h2>城市相对可负担排名</h2></div><p>仅用于本批样本内部比较</p></div><div id="rankChart" class="chart"></div></article>
+      <article class="chart-panel"><div class="panel-heading"><div><span>03</span><h2>[[ nationalFilters.city ]]区域供给</h2></div><p>点击柱形可锁定行政区</p></div><div id="nationalDistrictChart" class="chart"></div></article>
+      <article class="chart-panel"><div class="panel-heading"><div><span>04</span><h2>不同户型租金</h2></div><p>显示样本量最多的十类户型</p></div><div id="roomChart" class="chart"></div></article>
+      <article class="chart-panel wide"><div class="panel-heading"><div><span>05</span><h2>租金与面积关系</h2></div><p>颜色反映单位面积租金</p></div><div id="nationalScatterChart" class="chart compact"></div></article>
+    </section>
+
+    <section class="table-section">
+      <div class="panel-heading"><div><span>06</span><h2>[[ nationalFilters.city ]]候选房源样本</h2></div><p>按相对可负担指数展示前 60 项</p></div>
+      <div class="table-responsive"><table class="table align-middle">
+        <thead><tr><th>项目</th><th>区域</th><th>户型</th><th>月租</th><th>面积</th><th>单位面积租金</th><th>相对可负担指数</th></tr></thead>
+        <tbody><tr v-for="item in nationalListings" :key="item.project + item.location">
+          <td><strong>[[ item.project ]]</strong><small>[[ item.location ]]</small></td><td>[[ item.district ]]</td><td>[[ item.room_type ]]</td><td>¥[[ item.rent ]]</td><td>[[ item.area ]] ㎡</td><td>[[ item.rent_per_sqm ]] 元/㎡</td><td><span class="score">[[ item.affordability_score ]]</span></td>
+        </tr></tbody>
+      </table></div>
+    </section>
+    <p class="data-note"><strong>数据边界：</strong>[[ nationalMeta.note ]] 来源：<a :href="nationalMeta.source_url" target="_blank">[[ nationalMeta.source ]]</a></p>
+
+    <section class="section-intro shanghai-intro">
+      <p class="section-index">PART 02 · 上海通勤深度分析</p>
+      <h2>用预算与时间共同衡量上海可达生活圈</h2>
+      <p>该模块使用 713 条上海公租房与保障性租赁住房项目快照，提供目的地和通勤约束联动。</p>
+    </section>
+    <section class="control-strip">
+      <label>通勤目的地
+        <select v-model="filters.destination" @change="refresh" class="form-select">
+          <option v-for="item in meta.destinations" :key="item">[[ item ]]</option>
+        </select>
+      </label>
+      <label>区域
+        <select v-model="filters.district" @change="refresh" class="form-select">
+          <option v-for="item in meta.districts" :key="item">[[ item ]]</option>
+        </select>
+      </label>
+      <label class="slider-label">月租上限 <strong>¥[[ filters.budget ]]</strong>
+        <input type="range" min="1000" max="9000" step="100" v-model.number="filters.budget" @input="debouncedRefresh">
+      </label>
+      <label class="slider-label">最长通勤 <strong>[[ filters.maxCommute ]] 分钟</strong>
+        <input type="range" min="20" max="120" step="5" v-model.number="filters.maxCommute" @input="debouncedRefresh">
+      </label>
+      <button class="reset-btn" @click="reset">恢复默认</button>
+    </section>
+
+    <section class="metrics">
+      <article><span>可选房源</span><strong>[[ summary.count || 0 ]]</strong><small>个公开项目</small></article>
+      <article><span>租金中位数</span><strong>¥[[ summary.median_rent || 0 ]]</strong><small>每月</small></article>
+      <article><span>平均通勤</span><strong>[[ summary.mean_commute || 0 ]]</strong><small>分钟</small></article>
+      <article><span>平均面积</span><strong>[[ summary.mean_area || 0 ]]</strong><small>平方米</small></article>
+    </section>
+
+    <section class="grid-main">
+      <article class="chart-panel map-panel">
+        <div class="panel-heading"><div><span>01</span><h2>区域可负担房源分布</h2></div><p>点击柱形可锁定区域</p></div>
+        <div id="districtChart" class="chart"></div>
+      </article>
+      <article class="chart-panel">
+        <div class="panel-heading"><div><span>02</span><h2>租金与居住面积</h2></div><p>点大小表示通勤时间</p></div>
+        <div id="scatterChart" class="chart"></div>
+      </article>
+      <article class="chart-panel wide">
+        <div class="panel-heading"><div><span>03</span><h2>租金通勤多维权衡</h2></div><p>高分候选优先展示</p></div>
+        <div id="parallelChart" class="chart compact"></div>
+      </article>
+    </section>
+
+    <section class="table-section">
+      <div class="panel-heading"><div><span>04</span><h2>候选房源清单</h2></div><p>当前筛选前 80 项</p></div>
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead><tr><th>项目</th><th>区域</th><th>户型</th><th>月租中值</th><th>面积</th><th>估算通勤</th><th>最近轨交</th><th>可负担指数</th></tr></thead>
+          <tbody>
+            <tr v-for="item in listings" :key="item.project + item.address">
+              <td><strong>[[ item.project ]]</strong><small>[[ item.address ]]</small></td>
+              <td>[[ item.district ]]</td><td>[[ item.room_type || '未标注' ]]</td>
+              <td>¥[[ item.rent_mid ]]</td><td>[[ item.area_mid ]] ㎡</td>
+              <td>[[ item.commute ]] 分钟</td><td>[[ item.nearest_station ]]</td>
+              <td><span class="score">[[ item.affordability_score ]]</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+    <p class="data-note">房源来自公开公示整理快照。坐标与通勤时间为课程演示估算，正式决策前请核验运营机构公示并使用高德路线规划。</p>
+  </main>
+</div>
+<script src="{{ url_for('static', filename='vendor/vue.global.prod.min.js') }}"></script>
+<script src="{{ url_for('static', filename='vendor/echarts.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
+

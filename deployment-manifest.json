@@ -1,0 +1,62 @@
+[
+  {
+    "path": "app.py",
+    "bytes": 8473,
+    "sha256": "2fb775902b0e8bb9c6fa7c306bd5bbe276dbc68a4f98a44dd71afab868041d7f"
+  },
+  {
+    "path": "requirements-cloud.txt",
+    "bytes": 61,
+    "sha256": "aea0268055018a2568d3baff84b765bababeffd922ea09dc8d8262213515f566"
+  },
+  {
+    "path": "render.yaml",
+    "bytes": 475,
+    "sha256": "20a4d1dafce510ce836c770fc4975b4669c2d025688b02adac79ef04fdd3e783"
+  },
+  {
+    "path": "DEPLOY_RENDER.md",
+    "bytes": 3027,
+    "sha256": "ab30ba62f1d4ac32d5b0bda4c00151fe514e01dd9b843895df1a38cae2810c3c"
+  },
+  {
+    "path": "data/processed/five_city_rentals.csv",
+    "bytes": 11406997,
+    "sha256": "e31f2d0fdf4b0f1d16efd0b412c88c614057cb79149992349b77f3812034786e"
+  },
+  {
+    "path": "data/processed/housing_commute.csv",
+    "bytes": 187156,
+    "sha256": "b34b91eeb9ba9d202694ebbac6561266bbf49d607dab9b1c6aed11803a9f7223"
+  },
+  {
+    "path": "static/css/app.css",
+    "bytes": 3883,
+    "sha256": "8779374556fa6ee42dc415a7e08ec9980897250a4b78b85c0623a1df47bf9583"
+  },
+  {
+    "path": "static/js/app.js",
+    "bytes": 7088,
+    "sha256": "33b405f875ef67d19983a97ee8cb663fe47faa0769ec9e3fbcd16bf4a6f311c7"
+  },
+  {
+    "path": "static/vendor/bootstrap.min.css",
+    "bytes": 232803,
+    "sha256": "3c8f27e6009ccfd710a905e6dcf12d0ee3c6f2ac7da05b0572d3e0d12e736fc8"
+  },
+  {
+    "path": "static/vendor/echarts.min.js",
+    "bytes": 1034102,
+    "sha256": "bf4a223524e40b77c304bec67e1222cf551f14880cf42c69dc046558e11c07b1"
+  },
+  {
+    "path": "static/vendor/vue.global.prod.min.js",
+    "bytes": 157924,
+    "sha256": "c459ba7cc8db65c982589fa5d64c7ff478877e8e5b0fd75683207cec6a4e89e8"
+  },
+  {
+    "path": "templates/index.html",
+    "bytes": 9107,
+    "sha256": "4b777f34946f16c47b9fad0ad4b8740d2671988a78d137b905806db17f3a85e6"
+  }
+]

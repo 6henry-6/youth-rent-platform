@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: youth-rent-five-cities
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements-cloud.txt
+    startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 1 --threads 2 --timeout 120 --access-logfile - --error-logfile - app:app
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.8
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: PYTHONIOENCODING
+        value: utf-8
